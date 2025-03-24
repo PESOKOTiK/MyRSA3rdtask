@@ -21,7 +21,6 @@ namespace RSA
         }
 
         public static int GCD(int a, int b) => b == 0 ? a : GCD(b, a % b);
-
         public static int ModInverse(int e, int phi)
         {
             int t = 0, newT = 1, r = phi, newR = e;
@@ -34,7 +33,7 @@ namespace RSA
             return t < 0 ? t + phi : t;
         }
 
-        public static (int, int) FindPrimeFactors(int n, List<int> primes)
+        public static(int, int) FindPrimeFactors(int n, List<int> primes)
         {
             foreach (int prime in primes)
             {
@@ -42,18 +41,6 @@ namespace RSA
                     return (prime, n / prime);
             }
             throw new Exception("Prime factors not found.");
-        }
-
-        public static BigInteger StringToBigInteger(string message)
-        {
-            byte[] byteArray = Encoding.UTF8.GetBytes(message);
-            return new BigInteger(byteArray);
-        }
-
-        public static string BigIntegerToString(BigInteger bigInt)
-        {
-            byte[] byteArray = bigInt.ToByteArray();
-            return Encoding.UTF8.GetString(byteArray);
         }
     }
 }

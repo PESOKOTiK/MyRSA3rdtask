@@ -12,8 +12,7 @@ if (choice == 1)
 {
     Random rand = new Random();
     p = primes[rand.Next(primes.Count)];
-    q = primes[rand.Next( primes.Count)];
-    Console.WriteLine($"P: {p} Q: {q}");
+    q = primes[rand.Next(primes.Count)];
 }
 else if (choice == 2)
 {
@@ -36,16 +35,14 @@ int phi = (p - 1) * (q - 1);
 int e = MyRSA.FindE(phi);
 int d = MyRSA.ModInverse(e, phi);
 
-Console.Write("Enter message to encrypt: ");
-string message = Console.ReadLine();
-BigInteger messageInt = MyRSA.StringToBigInteger(message);
-
-BigInteger encryptedMessage = BigInteger.ModPow(messageInt, e, n);
-File.WriteAllText("ciphertext.txt", encryptedMessage + "," + n + "," + e);
-Console.WriteLine("Encrypted and saved: " + encryptedMessage);
+Console.Write("Enter message to encrypt (integer): ");
+int x = int.Parse(Console.ReadLine());
+BigInteger y = BigInteger.ModPow(x, e, n);
+File.WriteAllText("ciphertext.txt", y + "," + n + "," + e);
+Console.WriteLine("Encrypted and saved: " + y);
 
 string[] data = File.ReadAllText("ciphertext.txt").Split(',');
-BigInteger y = BigInteger.Parse(data[0]);
+y = BigInteger.Parse(data[0]);
 n = int.Parse(data[1]);
 e = int.Parse(data[2]);
 
@@ -53,6 +50,4 @@ e = int.Parse(data[2]);
 phi = (p - 1) * (q - 1);
 d = MyRSA.ModInverse(e, phi);
 BigInteger decrypted = BigInteger.ModPow(y, d, n);
-string decryptedMessage = MyRSA.BigIntegerToString(decrypted); 
-
-Console.WriteLine("Decrypted message: " + decryptedMessage);
+Console.WriteLine("Decrypted message: " + decrypted);
