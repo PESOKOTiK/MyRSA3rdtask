@@ -1,93 +1,58 @@
-﻿// See https://aka.ms/new-console-template for more information
-using RSA;
+﻿using RSA;
+using System.Numerics;
+using System.Text;
 
-List<int> primes = MyRSA.FindPrimes(1000);
-Console.WriteLine("\n1.Pick random prime\n2.See all primes up to 1000 and select 2\n3.Type 2 prime numbers without listing them\n");
-int choise, p, q;
-try {
-    choise = Convert.ToInt32(Console.ReadLine());
-}
-catch
+Console.WriteLine("\n1. Pick random prime\n2. See all primes up to 1000 and select 2\n3. Type 2 prime numbers without listing them");
+int choice = int.Parse(Console.ReadLine());
+
+int p = 0, q = 0;
+List<int> primes = MyRSA.GeneratePrimes(1000);
+
+if (choice == 1)
 {
-    Console.WriteLine("Not a number");
-    return;
+    Random rand = new Random();
+    p = primes[rand.Next(primes.Count)];
+    q = primes[rand.Next( primes.Count)];
+    Console.WriteLine($"P: {p} Q: {q}");
 }
-Start:
-switch (choise)
+else if (choice == 2)
 {
-    case 1:
-        Random random = new Random();
-
-        p = primes[random.Next(primes.Count)];
-        q = primes[random.Next(primes.Count)];
-        Console.WriteLine($"p = {p} and q = {q}");
-        break;
-    case 2:
-        foreach (int i in primes)
-        {
-            int j = 0;
-            Console.Write($"{i}   ");
-            j++;
-            if (j == 4)
-            {
-                j = 0;
-                Console.Write("\n");
-            }
-        }
-        Console.WriteLine("Enter first prime p\n");
-        p = Convert.ToInt32(Console.ReadLine());
-        Console.WriteLine("Enter second prime q\n");
-        q = Convert.ToInt32(Console.ReadLine());
-        if (!MyRSA.IsPrime(p) || !MyRSA.IsPrime(q))
-        {
-            Console.WriteLine("Not a prime");
-            goto Start;
-        }
-
-        break;
-    case 3:
-        Console.WriteLine("Enter first prime p\n");
-        p = Convert.ToInt32(Console.ReadLine());
-        Console.WriteLine("Enter second prime q\n");
-        q = Convert.ToInt32(Console.ReadLine());
-        if (!MyRSA.IsPrime(p) || !MyRSA.IsPrime(q))
-        {
-            Console.WriteLine("Not a prime");
-            goto Start;
-        }
-        break;
-    default:
-        Console.WriteLine("Wrong choice!\n");
-        goto Start;
-        break;
+    Console.WriteLine(string.Join(", ", primes));
+    Console.Write("Pick p: "); p = int.Parse(Console.ReadLine());
+    Console.Write("Pick q: "); q = int.Parse(Console.ReadLine());
 }
-Console.WriteLine("Enter plaintext:\n");
-string x = Console.ReadLine();
-
-
-var (n, e, d) = MyRSA.GenerateKeys(p,q);
-Console.WriteLine($"Public key is n={n}, e = {e}");
-Console.WriteLine($"Private key is n={n}, d = {d}");
-
-List<int> ciphertext = MyRSA.Encrypt(x, n, e);
-Console.WriteLine($"Ciphertext: {string.Join(", ", ciphertext)}");
-
-File.WriteAllText("ciphertext.txt", $"{string.Join(", ", ciphertext)}\n{n},{e}");
-Console.WriteLine("Ciphertext and public key saved to 'ciphertext.txt'.");
-
-string[] fileData = File.ReadAllLines("ciphertext.txt");
-string[] cipherTextStr = fileData[0].Split(new string[] { ", " }, StringSplitOptions.None);
-List<int> readCiphertext = new List<int>();
-foreach (string val in cipherTextStr)
+else if (choice == 3)
 {
-    readCiphertext.Add(int.Parse(val));
+    Console.Write("Enter p: "); p = int.Parse(Console.ReadLine());
+    Console.Write("Enter q: "); q = int.Parse(Console.ReadLine());
+}
+else
+{
+    Console.WriteLine("Invalid option."); return;
 }
 
-string[] publicKey = fileData[1].Split(',');
-int readN = int.Parse(publicKey[0]);
-int readE = int.Parse(publicKey[1]);
+int n = p * q;
+int phi = (p - 1) * (q - 1);
+int e = MyRSA.FindE(phi);
+int d = MyRSA.ModInverse(e, phi);
 
-string decryptedText = MyRSA.Decrypt(readCiphertext, readN, d);
-Console.WriteLine($"Decrypted Text: {decryptedText}");
-File.WriteAllText("decrypted.txt", decryptedText);
+Console.Write("Enter message to encrypt: ");
+string message = Console.ReadLine();
+BigInteger messageInt = MyRSA.StringToBigInteger(message);
 
+BigInteger encryptedMessage = BigInteger.ModPow(messageInt, e, n);
+File.WriteAllText("ciphertext.txt", encryptedMessage + "," + n + "," + e);
+Console.WriteLine("Encrypted and saved: " + encryptedMessage);
+
+string[] data = File.ReadAllText("ciphertext.txt").Split(',');
+BigInteger y = BigInteger.Parse(data[0]);
+n = int.Parse(data[1]);
+e = int.Parse(data[2]);
+
+(p, q) = MyRSA.FindPrimeFactors(n, primes);
+phi = (p - 1) * (q - 1);
+d = MyRSA.ModInverse(e, phi);
+BigInteger decrypted = BigInteger.ModPow(y, d, n);
+string decryptedMessage = MyRSA.BigIntegerToString(decrypted); 
+
+Console.WriteLine("Decrypted message: " + decryptedMessage);
