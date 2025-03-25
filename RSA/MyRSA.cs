@@ -5,7 +5,7 @@ namespace RSA
 {
     public static class Constants
     {
-        public static int e = 0x10001; // Common public exponent value for RSA.
+        public static int e = 0x10001;
     }
 
     public enum KeyType
@@ -43,47 +43,53 @@ namespace RSA
 
     public static class MyRSA
     {
-        // Generate a key pair for RSA encryption
         public static KeyPair GenerateKeyPair(int p, int q)
         {
-            // Calculate n = p * q
             BigInteger n = p * q;
 
-            // Compute phi(n) = (p - 1) * (q - 1)
             BigInteger phi_n = (p - 1) * (q - 1);
 
-            // Compute d such that (d * e) % phi(n) = 1 (modular inverse of e)
             BigInteger d = ModularInverse(Constants.e, phi_n);
 
-            // Public key (e, n)
             Key publicKey = new Key(n, KeyType.PUBLIC);
 
-            // Private key (d, n)
             Key privateKey = new Key(n, KeyType.PRIVATE, d);
 
             return new KeyPair(publicKey, privateKey);
         }
 
-        // Encrypt message using RSA
         public static string Encrypt(string plaintext, Key publicKey)
         {
-            byte[] bytes = Encoding.UTF8.GetBytes(plaintext);
-            BigInteger m = new BigInteger(bytes);
-            BigInteger c = BigInteger.ModPow(m, publicKey.e, publicKey.n);
-            return Convert.ToBase64String(c.ToByteArray());
+            StringBuilder encryptedText = new StringBuilder();
+
+            foreach (char c in plaintext)
+            {
+                BigInteger m = new BigInteger(c);
+                BigInteger cEncrypted = BigInteger.ModPow(m, publicKey.e, publicKey.n);
+                encryptedText.Append(cEncrypted + " ");
+            }
+
+            return encryptedText.ToString().Trim();
         }
 
-        // Decrypt message using RSA
         public static string Decrypt(string ciphertext, Key privateKey)
         {
-            byte[] bytes = Convert.FromBase64String(ciphertext);
-            BigInteger c = new BigInteger(bytes);
-            BigInteger m = BigInteger.ModPow(c, privateKey.d, privateKey.n);
-            byte[] decryptedBytes = m.ToByteArray();
-            return Encoding.UTF8.GetString(decryptedBytes).TrimEnd('\0');
+            StringBuilder decryptedText = new StringBuilder();
+            string[] encryptedChars = ciphertext.Split(' ');
+
+            foreach (string encryptedChar in encryptedChars)
+            {
+                if (BigInteger.TryParse(encryptedChar, out BigInteger c))
+                {
+                    BigInteger m = BigInteger.ModPow(c, privateKey.d, privateKey.n);
+                    decryptedText.Append((char)(int)m);
+                }
+            }
+
+            return decryptedText.ToString();
         }
 
-        // Euclidean algorithm to compute gcd(a, b)
+
         public static BigInteger GCD(BigInteger a, BigInteger b)
         {
             while (b != 0)
@@ -95,7 +101,6 @@ namespace RSA
             return a;
         }
 
-        // Extended Euclidean algorithm to compute modular inverse
         public static BigInteger ModularInverse(BigInteger e, BigInteger phi_n)
         {
             BigInteger t = 0;
@@ -124,8 +129,6 @@ namespace RSA
 
             return t;
         }
-
-        // Function to generate random prime numbers up to 1000
         public static int GetRandomPrime()
         {
             Random rand = new Random();
@@ -133,13 +136,11 @@ namespace RSA
             return primes[rand.Next(primes.Length)];
         }
 
-        // Function to get all prime numbers up to 1000
         public static int[] GetPrimesUpTo1000()
         {
             return Enumerable.Range(2, 999).Where(x => IsPrime(x)).ToArray();
         }
 
-        // Function to check if a number is prime
         public static bool IsPrime(int number)
         {
             if (number <= 1) return false;

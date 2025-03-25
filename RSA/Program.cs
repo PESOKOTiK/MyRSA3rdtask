@@ -2,6 +2,7 @@
 
 while (true)
 {
+    Console.Clear();
     Console.WriteLine("\nRSA Menu:");
     Console.WriteLine("1. Pick random prime");
     Console.WriteLine("2. See all primes up to 1000 and select 2");
@@ -13,7 +14,6 @@ while (true)
     switch (choice)
     {
         case "1":
-            // Option 1: Pick random prime
             int prime1 = MyRSA.GetRandomPrime();
             int prime2 = MyRSA.GetRandomPrime();
             Console.WriteLine($"Random Primes Selected: p = {prime1}, q = {prime2}");
@@ -21,7 +21,6 @@ while (true)
             break;
 
         case "2":
-            // Option 2: See all primes up to 1000 and select 2
             var primesUpTo1000 = MyRSA.GetPrimesUpTo1000();
             Console.WriteLine("Prime numbers up to 1000:");
             for (int i = 0; i < primesUpTo1000.Length; i++)
@@ -37,7 +36,6 @@ while (true)
             break;
 
         case "3":
-            // Option 3: Type 2 prime numbers directly
             Console.Write("Enter first prime number: ");
             int p3 = int.Parse(Console.ReadLine());
             Console.Write("Enter second prime number: ");
@@ -47,7 +45,6 @@ while (true)
             break;
 
         case "0":
-            // Exit the program
             Console.WriteLine("Exiting program...");
             return;
 
@@ -59,29 +56,24 @@ while (true)
 
 static void GenerateAndDisplayKeys(int p, int q)
 {
-    // Generate the key pair using p and q
     KeyPair keyPair = MyRSA.GenerateKeyPair(p, q);
 
-    // Print public and private keys
     Console.WriteLine($"Public Key: (e={keyPair.PublicKey.e}, n={keyPair.PublicKey.n})");
     Console.WriteLine($"Private Key: (d={keyPair.PrivateKey.d}, n={keyPair.PrivateKey.n})");
 
-    // Input plaintext message to encrypt
     Console.Write("Enter message to encrypt: ");
     string message = Console.ReadLine();
 
-    // Encrypt the message
     string encryptedMessage = MyRSA.Encrypt(message, keyPair.PublicKey);
     Console.WriteLine($"Encrypted Message: {encryptedMessage}");
 
-    // Save the encrypted message and public key to a file
     File.WriteAllText("ciphertext.txt", encryptedMessage);
     File.WriteAllText("publicKey.txt", $"{keyPair.PublicKey.e},{keyPair.PublicKey.n}");
 
-    // Read the encrypted message from the file
     string ciphertext = File.ReadAllText("ciphertext.txt");
 
-    // Decrypt the message
     string decryptedMessage = MyRSA.Decrypt(ciphertext, keyPair.PrivateKey);
     Console.WriteLine($"Decrypted Message: {decryptedMessage}");
+    Console.WriteLine("Press any key to continue...");
+    Console.ReadKey();
 }
